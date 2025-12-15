@@ -99,16 +99,22 @@ async function getSongs(folder) {
     return songs;
 }
 
-const playMusic = (track, pause = false, index = -1) => {
+const playMusic = (track, pause = false, index = null) => {
     currentSong.src = `/Spotify-Clone/${currFolder}/${track}`;
     
-    // Update the cached song index - use provided index or find it
-    currentSongIndex = index >= 0 ? index : songs.indexOf(track);
+    // Update the cached song index - use provided index or find it (only as fallback)
+    if (index !== null) {
+        currentSongIndex = index;
+    } else {
+        // Fallback for backward compatibility - should be avoided
+        console.warn('playMusic called without index - using slower indexOf lookup');
+        currentSongIndex = songs.indexOf(track);
+    }
     
     domCache.songInfo.innerHTML = decodeURI(track);
     domCache.songTime.innerHTML = "00:00 / 00:00";
 
-    // Remove previous listener to prevent memory leaks
+    // Replace previous listener to prevent memory leaks (intentional behavior)
     currentSong.onloadedmetadata = () => {
         domCache.songTime.innerHTML = `00:00 / ${secondsToMinutesSeconds(currentSong.duration)}`;
     };
