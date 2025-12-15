@@ -12,7 +12,9 @@ const domCache = {
     circle: null,
     playButton: null,
     volumeImg: null,
-    rangeInput: null
+    rangeInput: null,
+    previousButton: null,
+    nextButton: null
 };
 
 // Initialize DOM cache after page load
@@ -24,6 +26,8 @@ function initDOMCache() {
     domCache.playButton = document.getElementById("play");
     domCache.volumeImg = document.querySelector(".volume>img");
     domCache.rangeInput = document.querySelector(".range input");
+    domCache.previousButton = document.getElementById("previous");
+    domCache.nextButton = document.getElementById("next");
 }
 
 // Debounce function for high-frequency events
@@ -65,7 +69,7 @@ async function getSongs(folder) {
     }
 
     // Show all the songs in the playlist - optimized to use DocumentFragment
-    const songUL = domCache.songList || document.querySelector(".songList ul");
+    const songUL = domCache.songList;
     songUL.innerHTML = "";
     const fragment = document.createDocumentFragment();
     
@@ -96,21 +100,18 @@ async function getSongs(folder) {
 
 const playMusic = (track, pause = false) => {
     currentSong.src = `/Spotify-Clone/${currFolder}/${track}`;
-    const songInfo = domCache.songInfo || document.querySelector(".songinfo");
-    const songTime = domCache.songTime || document.querySelector(".songtime");
-    const playButton = domCache.playButton || document.getElementById("play");
     
-    songInfo.innerHTML = decodeURI(track);
-    songTime.innerHTML = "00:00 / 00:00";
+    domCache.songInfo.innerHTML = decodeURI(track);
+    domCache.songTime.innerHTML = "00:00 / 00:00";
 
     // Remove previous listener to prevent memory leaks
     currentSong.onloadedmetadata = () => {
-        songTime.innerHTML = `00:00 / ${secondsToMinutesSeconds(currentSong.duration)}`;
+        domCache.songTime.innerHTML = `00:00 / ${secondsToMinutesSeconds(currentSong.duration)}`;
     };
 
     if (!pause) {
         currentSong.play();
-        playButton.src = "img/pause.svg";
+        domCache.playButton.src = "img/pause.svg";
     }
 };
 
@@ -199,25 +200,27 @@ async function main() {
         document.querySelector(".left").style.left = "-120%";
     });
 
-    // Cache the current song filename to avoid repeated string operations
-    let getCurrentSongIndex = () => {
+    // Cache the current song index to avoid repeated string operations
+    let currentSongIndex = -1;
+    
+    const updateCurrentSongIndex = () => {
         const currentSongName = currentSong.src.split("/").slice(-1)[0];
-        return songs.indexOf(currentSongName);
+        currentSongIndex = songs.indexOf(currentSongName);
     };
 
-    previous.addEventListener("click", () => {
+    domCache.previousButton.addEventListener("click", () => {
         currentSong.pause();
-        let index = getCurrentSongIndex();
-        if ((index - 1) >= 0) {
-            playMusic(songs[index - 1]);
+        updateCurrentSongIndex();
+        if ((currentSongIndex - 1) >= 0) {
+            playMusic(songs[currentSongIndex - 1]);
         }
     });
 
-    next.addEventListener("click", () => {
+    domCache.nextButton.addEventListener("click", () => {
         currentSong.pause();
-        let index = getCurrentSongIndex();
-        if ((index + 1) < songs.length) {
-            playMusic(songs[index + 1]);
+        updateCurrentSongIndex();
+        if ((currentSongIndex + 1) < songs.length) {
+            playMusic(songs[currentSongIndex + 1]);
         }
     });
 
