@@ -74,7 +74,7 @@ async function getSongs(folder) {
     songUL.innerHTML = "";
     const fragment = document.createDocumentFragment();
     
-    for (const song of songs) {
+    songs.forEach((song, songIndex) => {
         const li = document.createElement("li");
         li.innerHTML = `<img class="invert" width="34" src="img/music.svg" alt="">
             <div class="info">
@@ -87,13 +87,12 @@ async function getSongs(folder) {
             </div>`;
         
         // Attach click event directly to each li with index
-        const songIndex = songs.indexOf(song);
         li.addEventListener("click", () => {
             playMusic(song, false, songIndex);
         });
         
         fragment.appendChild(li);
-    }
+    });
     
     songUL.appendChild(fragment);
 
@@ -151,7 +150,7 @@ async function displayAlbums() {
         card.addEventListener("click", async () => {
             console.log("Fetching Songs");
             songs = await getSongs(`Songs/${card.dataset.folder}`);
-            playMusic(songs[0]);
+            playMusic(songs[0], false, 0);
         });
         
         fragment.appendChild(card);
@@ -166,7 +165,7 @@ async function main() {
     
     songs = await getSongs("Songs/ncs");
     if (songs.length > 0) {
-        playMusic(songs[0], true);
+        playMusic(songs[0], true, 0);
     }
 
     await displayAlbums();
