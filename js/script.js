@@ -3,6 +3,7 @@ console.log('Lets write JavaScript');
 let currentSong = new Audio();
 let songs;
 let currFolder;
+let currentSongIndex = -1; // Cache the current song index
 
 // Cache frequently used DOM elements
 const domCache = {
@@ -100,6 +101,9 @@ async function getSongs(folder) {
 
 const playMusic = (track, pause = false) => {
     currentSong.src = `/Spotify-Clone/${currFolder}/${track}`;
+    
+    // Update the cached song index
+    currentSongIndex = songs.indexOf(track);
     
     domCache.songInfo.innerHTML = decodeURI(track);
     domCache.songTime.innerHTML = "00:00 / 00:00";
@@ -200,17 +204,9 @@ async function main() {
         document.querySelector(".left").style.left = "-120%";
     });
 
-    // Cache the current song index to avoid repeated string operations
-    let currentSongIndex = -1;
-    
-    const updateCurrentSongIndex = () => {
-        const currentSongName = currentSong.src.split("/").slice(-1)[0];
-        currentSongIndex = songs.indexOf(currentSongName);
-    };
-
+    // Navigate to previous/next songs using cached index
     domCache.previousButton.addEventListener("click", () => {
         currentSong.pause();
-        updateCurrentSongIndex();
         if ((currentSongIndex - 1) >= 0) {
             playMusic(songs[currentSongIndex - 1]);
         }
@@ -218,7 +214,6 @@ async function main() {
 
     domCache.nextButton.addEventListener("click", () => {
         currentSong.pause();
-        updateCurrentSongIndex();
         if ((currentSongIndex + 1) < songs.length) {
             playMusic(songs[currentSongIndex + 1]);
         }
