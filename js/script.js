@@ -86,9 +86,10 @@ async function getSongs(folder) {
                 <img class="invert" src="img/play.svg" alt="">
             </div>`;
         
-        // Attach click event directly to each li
+        // Attach click event directly to each li with index
+        const songIndex = songs.indexOf(song);
         li.addEventListener("click", () => {
-            playMusic(li.querySelector(".info").firstElementChild.innerHTML.trim());
+            playMusic(song, false, songIndex);
         });
         
         fragment.appendChild(li);
@@ -99,11 +100,11 @@ async function getSongs(folder) {
     return songs;
 }
 
-const playMusic = (track, pause = false) => {
+const playMusic = (track, pause = false, index = -1) => {
     currentSong.src = `/Spotify-Clone/${currFolder}/${track}`;
     
-    // Update the cached song index
-    currentSongIndex = songs.indexOf(track);
+    // Update the cached song index - use provided index or find it
+    currentSongIndex = index >= 0 ? index : songs.indexOf(track);
     
     domCache.songInfo.innerHTML = decodeURI(track);
     domCache.songTime.innerHTML = "00:00 / 00:00";
@@ -207,15 +208,17 @@ async function main() {
     // Navigate to previous/next songs using cached index
     domCache.previousButton.addEventListener("click", () => {
         currentSong.pause();
-        if ((currentSongIndex - 1) >= 0) {
-            playMusic(songs[currentSongIndex - 1]);
+        const newIndex = currentSongIndex - 1;
+        if (newIndex >= 0) {
+            playMusic(songs[newIndex], false, newIndex);
         }
     });
 
     domCache.nextButton.addEventListener("click", () => {
         currentSong.pause();
-        if ((currentSongIndex + 1) < songs.length) {
-            playMusic(songs[currentSongIndex + 1]);
+        const newIndex = currentSongIndex + 1;
+        if (newIndex < songs.length) {
+            playMusic(songs[newIndex], false, newIndex);
         }
     });
 
